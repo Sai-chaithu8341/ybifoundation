@@ -1,1 +1,137 @@
+Movie Recommendation System
+Recommender System Recommender System is a system that seeks to predict or filter preferences according to the user’s choices. Recommender systems are utilized in a variety of areas including movies, music, news, books, research articles, search queries, social tags, and products in general. Recommender systems produce a list of recommendations in any of the two ways –
+
+collaborative filtering Collaborative filtering approaches build a model from the user’s past behavior (i.e. items purchased or searched by the user) as well as similar decisions made by other users. This model is then used to predict items (or ratings for items) that users may have an interest in
+
+Content-based filtering: Content-based filtering approaches uses a series of discrete characteristics of an item in order to recommend additional items with similar properties. Content-based filtering methods are totally based on a description of the item and a profile of the user’s preferences. It recommends items based on the user’s past preferences.
+
+Let’s develop a basic recommendation system using Python and Pandas. Let’s focus on providing a basic recommendation system by suggesting items that are most similar to a particular item, in this case, movies. It just tells what movies/items are most similar to the user’s movie choice.
+
+Import Library
+[1]
+1s
+import pandas as pd
+[2]
+0s
+import numpy as np
+Import Dataset
+[7]
+2s
+column_names = ['user_id', 'item_id', 'rating', 'timestamp'] 
+  
+path = 'https://media.geeksforgeeks.org/wp-content/uploads/file.tsv'
+  
+df = pd.read_csv(path, sep='\t', names=column_names) 
+  
+df.head()
+output
+
+[8]
+1s
+movie_titles = pd.read_csv('https://media.geeksforgeeks.org/wp-content/uploads/Movie_Id_Titles.csv') 
+movie_titles.head()
+output
+
+[9]
+0s
+data = pd.merge(df, movie_titles, on='item_id') 
+data.head() 
+output
+
+[10]
+0s
+data.groupby('title')['rating'].mean().sort_values(ascending=False).head() 
+output
+title
+They Made Me a Criminal (1939)                5.0
+Marlene Dietrich: Shadow and Light (1996)     5.0
+Saint of Fort Washington, The (1993)          5.0
+Someone Else's America (1995)                 5.0
+Star Kid (1997)                               5.0
+Name: rating, dtype: float64
+[11]
+0s
+ratings = pd.DataFrame(data.groupby('title')['rating'].mean())  
+  
+ratings['num of ratings'] = pd.DataFrame(data.groupby('title')['rating'].count()) 
+  
+ratings.head()
+output
+
+Visualizatiion Imports
+[12]
+5s
+import matplotlib.pyplot as plt 
+import seaborn as sns 
+  
+sns.set_style('white') 
+%matplotlib inline 
+[13]
+1s
+plt.figure(figsize =(10, 4)) 
+  
+ratings['num of ratings'].hist(bins = 70)
+output
+
+[14]
+0s
+plt.figure(figsize =(10, 4)) 
+  
+ratings['rating'].hist(bins = 70) 
+output
+
+[15]
+0s
+moviemat = data.pivot_table(index ='user_id', 
+              columns ='title', values ='rating') 
+  
+moviemat.head() 
+  
+ratings.sort_values('num of ratings', ascending = False).head(10) 
+output
+
+[16]
+0s
+starwars_user_ratings = moviemat['Star Wars (1977)'] 
+liarliar_user_ratings = moviemat['Liar Liar (1997)'] 
+  
+starwars_user_ratings.head() 
+output
+user_id
+0    5.0
+1    5.0
+2    5.0
+3    NaN
+4    5.0
+Name: Star Wars (1977), dtype: float64
+[17]
+1s
+similar_to_starwars = moviemat.corrwith(starwars_user_ratings) 
+similar_to_liarliar = moviemat.corrwith(liarliar_user_ratings) 
+  
+corr_starwars = pd.DataFrame(similar_to_starwars, columns =['Correlation']) 
+corr_starwars.dropna(inplace = True) 
+  
+corr_starwars.head()
+output
+
+[18]
+0s
+corr_starwars.sort_values('Correlation', ascending = False).head(10) 
+corr_starwars = corr_starwars.join(ratings['num of ratings']) 
+  
+corr_starwars.head() 
+  
+corr_starwars[corr_starwars['num of ratings']>100].sort_values('Correlation', ascending = False).head() 
+output
+
+[19]
+0s
+corr_liarliar = pd.DataFrame(similar_to_liarliar, columns =['Correlation']) 
+corr_liarliar.dropna(inplace = True) 
+  
+corr_liarliar = corr_liarliar.join(ratings['num of ratings']) 
+corr_liarliar[corr_liarliar['num of ratings']>100].sort_values('Correlation', ascending = False).head() 
+output
+
 
